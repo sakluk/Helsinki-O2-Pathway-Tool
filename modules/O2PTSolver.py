@@ -316,7 +316,7 @@ class O2PTSolver():
             return self.validValues
 
     def phTempCorrection(self, pH0, pH, T0, T, PvO2):
-        lnPvO2 = np.log(PvO2)
+        # lnPvO2 = np.log(PvO2)
 
         if pH != pH0 or T != T0:
             lnPO2pH = (pH - pH0) * (-1.1)
@@ -325,7 +325,7 @@ class O2PTSolver():
             lnPO2pH = 0
             lnPO2Temp = 0
 
-        PvO2 = np.exp( lnPvO2 + lnPO2Temp + lnPO2pH )
+        PvO2 *= np.exp(lnPO2Temp + lnPO2pH)
 
         return PvO2
 
@@ -394,7 +394,7 @@ class O2PTSolver():
 
         # Calculate diffusion DO2
         a = 11700.0/(1.0/SvO2 - 1)
-        b = np.sqrt( 50**3 + a**2)
+        b = np.sqrt(50**3 + a**2)
         PvO2_calc = self.formatPvO2(a, b) # mmHg
 
         if PvO2_calc < 0:
@@ -443,8 +443,8 @@ class O2PTSolver():
         [DO2, DO2_graph] = self.solveDO2(VO2, PvO2_corrected) # Two values to improve graphical display accuracy
 
         # Compute the coefficient for convection curve shift
-        PvO2_coef = PvO2_corrected/PvO2_calc
-        PvO2_err = PvO2_corrected-PvO2_calc
+        # PvO2_coef = PvO2_corrected/PvO2_calc
+        # PvO2_err = PvO2_corrected-PvO2_calc
 
         # Calculate datapoints for diffusion line
         PvO2 = np.arange(0.0, 100.01, 0.1)
@@ -481,6 +481,6 @@ class O2PTSolver():
 
         SvO2 = SvO2 * 100
 
-        self.w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_corrected, DO2, PvO2_coef, PvO2_err)
+        self.w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_corrected, DO2) #, PvO2_coef, PvO2_err)
 
         return self.validValues
