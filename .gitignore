@@ -2,5 +2,7 @@
 /dist
 /O2
 /__pycache__
+/modules/__pycache__
+/objects/__pycache__
 README.md
 Entitlements.plist
