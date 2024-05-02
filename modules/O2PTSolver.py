@@ -393,8 +393,8 @@ class O2PTSolver():
         QaO2 = self.formatQaO2(Q, CaO2)
 
         # Calculate diffusion DO2
-        a = 11700 * np.float_power( ( np.float_power(SvO2,-1) - 1 ), -1 )
-        b = np.float_power( 50**3 + np.float_power(a,2), 0.5 )
+        a = 11700.0/(1.0/SvO2 - 1)
+        b = np.sqrt( 50**3 + a**2)
         PvO2_calc = self.formatPvO2(a, b) # mmHg
 
         if PvO2_calc < 0:
@@ -447,7 +447,7 @@ class O2PTSolver():
         PvO2_err = PvO2_corrected-PvO2_calc
 
         # Calculate datapoints for diffusion line
-        PvO2 = np.arange(0.01,100.01,0.1)
+        PvO2 = np.arange(0.0, 100.01, 0.1)
         k = float(self.d['k'])
         # y = k * DO2 * PvO2
         y = k * DO2_graph * PvO2
@@ -460,7 +460,7 @@ class O2PTSolver():
             Hb = Hb / 10
 
         # Calculate datapoints for convective curve
-        y2 = lambda x: Q * 1.34 * Hb * (SaO2/100 - 1/((23400/(np.float_power(x,3)+150*x))+1))*10
+        y2 = lambda x: Q * 1.34 * Hb * (SaO2/100 - (x**3 + 150*x)/(x**3 + 150*x + 23400))*10
         x2 = self.phTempCorrection(pH, pH0, T, T0, PvO2)
         y2 = y2(x2)
         
