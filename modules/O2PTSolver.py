@@ -4,7 +4,6 @@ class O2PTSolver():
     def __init__(self, workloadObject, detailsDict):
         self.w = workloadObject
         self.d = detailsDict
-        self.preventCorrection = False
         self.validValues = True
 
     def formatQ(self):
@@ -305,12 +304,7 @@ class O2PTSolver():
         self.w.setMC('PvO2_MC', 1)
         
         try:
-            if PvO2 == 0:
-                return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
-            else:
-                # self.preventCorrection = True
-                # return PvO2
-                return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
+            return (a + b)**(1/3.0) - (b - a)**(1/3.0)
         except:
             self.validValues = False
             return self.validValues
@@ -369,13 +363,6 @@ class O2PTSolver():
             self.validValues = False
             return self.validValues
 
-    def solveP50(self, pH0, pH, T0, T):
-        p50S = 26.86
-        p50pH = p50S-25.535*(pH-pH0)+10.646*(pH-pH0)**2-1.764*(pH-pH0)**3
-        p50T = p50S+1.435*(T-T0) + np.float_power(4.163, -2)*(T-T0)**2 + np.float_power(6.86, -4)*(T-T0)**3
-        p50 = p50S * (p50pH/p50S) * (p50T/p50S)
-        return p50
-
     def calc(self): #w=workload object, details=dict
         # validValues = True
         Q = self.formatQ()
@@ -410,17 +397,9 @@ class O2PTSolver():
         except:
             self.validValues = False
             return self.validValues
-
-        if self.preventCorrection:
-            PvO2_corrected = PvO2_calc
-        else:
-            PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
+        PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
         [DO2, DO2_graph] = self.solveDO2(VO2, PvO2_corrected) # Two values to improve graphical display accuracy
-
-        # Compute the coefficient for convection curve shift
-        # PvO2_coef = PvO2_corrected/PvO2_calc
-        # PvO2_err = PvO2_corrected-PvO2_calc
 
         # Calculate datapoints for diffusion line
         PvO2 = np.arange(0.0, 100.01, 0.1)
@@ -457,6 +436,6 @@ class O2PTSolver():
 
         SvO2 = SvO2 * 100
 
-        self.w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_corrected, DO2) #, PvO2_coef, PvO2_err)
+        self.w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_corrected, DO2)
 
         return self.validValues
