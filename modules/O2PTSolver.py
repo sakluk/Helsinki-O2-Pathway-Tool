@@ -335,20 +335,10 @@ class O2PTSolver():
             return T
 
     def solveDO2(self, VO2, PvO2):
-        VO2Unit = self.d['VO2_unit']
-        
-        try:
-            k = float(self.d['k'])
-        except ValueError:
-            self.validValues = False
-            return self.validValues
-        
-        # self.w.setMC('DO2_MC', 1)
-
+        VO2Unit = self.d['VO2_unit']     
         try:
             if VO2Unit == 'ml/min': # -> l/min
-                VO2 = VO2 / 1000
-                
+                VO2 = VO2 / 1000                
             return VO2 / 2 / PvO2 * 1000
         except:
             self.validValues = False
