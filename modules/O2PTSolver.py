@@ -336,10 +336,6 @@ class O2PTSolver():
 
     def solveDO2(self, VO2, PvO2):
         VO2Unit = self.d['VO2_unit']
-        try:
-            DO2 = float(self.d['DO2'])
-        except ValueError:
-            DO2 = 0
         
         try:
             k = float(self.d['k'])
@@ -350,15 +346,10 @@ class O2PTSolver():
         # self.w.setMC('DO2_MC', 1)
 
         try:
-            if DO2 == 0:
-                if VO2Unit == 'ml/min': # -> l/min
-                    VO2 = VO2 / 1000
+            if VO2Unit == 'ml/min': # -> l/min
+                VO2 = VO2 / 1000
                 
-                # return VO2 / 2 / PvO2 * 1000
-                return [VO2 / k / PvO2 * 1000, VO2 / k / PvO2 * 1000]
-            else:
-                return [DO2, VO2 / k / PvO2 * 1000]
-                # return VO2 / k / PvO2 * 1000
+            return VO2 / 2 / PvO2 * 1000
         except:
             self.validValues = False
             return self.validValues
@@ -399,13 +390,12 @@ class O2PTSolver():
             return self.validValues
         PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
-        [DO2, DO2_graph] = self.solveDO2(VO2, PvO2_corrected) # Two values to improve graphical display accuracy
+        DO2 = self.solveDO2(VO2, PvO2_corrected)
 
         # Calculate datapoints for diffusion line
         PvO2 = np.arange(0.0, 100.01, 0.1)
         k = float(self.d['k'])
-        # y = k * DO2 * PvO2
-        y = k * DO2_graph * PvO2
+        y = k * DO2 * PvO2
 
         # Convert to l/min
         if self.d['Q_unit'] == 'ml/min':
