@@ -296,19 +296,6 @@ class O2PTSolver():
             self.validValues = False
             return self.validValues
 
-    def formatPvO2(self, a, b):
-        try:
-            PvO2 = float(self.d['PvO2'])
-        except ValueError:
-            PvO2 = 0
-        self.w.setMC('PvO2_MC', 1)
-        
-        try:
-            return (a + b)**(1/3.0) - (b - a)**(1/3.0)
-        except:
-            self.validValues = False
-            return self.validValues
-
     def phTempCorrection(self, pH0, pH, T0, T, PvO2):
         # lnPvO2 = np.log(PvO2)
 
@@ -334,16 +321,6 @@ class O2PTSolver():
         else:
             return T
 
-    def solveDO2(self, VO2, PvO2):
-        VO2Unit = self.d['VO2_unit']     
-        try:
-            if VO2Unit == 'ml/min': # -> l/min
-                VO2 = VO2 / 1000                
-            return VO2 / 2 / PvO2 * 1000
-        except:
-            self.validValues = False
-            return self.validValues
-
     def calc(self): #w=workload object, details=dict
         # validValues = True
         Q = self.formatQ()
@@ -363,7 +340,8 @@ class O2PTSolver():
         # Calculate diffusion DO2
         a = 11700.0/(1.0/SvO2 - 1)
         b = np.sqrt(50**3 + a**2)
-        PvO2_calc = self.formatPvO2(a, b) # mmHg
+        PvO2_calc = (a + b)**(1/3.0) - (b - a)**(1/3.0)
+        self.w.setMC('PvO2_MC', 1)
 
         if PvO2_calc < 0:
             self.validValues = False
@@ -380,7 +358,11 @@ class O2PTSolver():
             return self.validValues
         PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
-        DO2 = self.solveDO2(VO2, PvO2_corrected)
+        # Solve DO2    
+        if self.d['VO2_unit'] == 'ml/min':
+            DO2 = VO2 / 2 / PvO2_corrected
+        else: # 'l/min'               
+            DO2 = VO2 / 2 / PvO2_corrected * 1000
 
         # Calculate datapoints for diffusion line
         PvO2 = np.arange(0.0, 100.01, 0.1)
@@ -395,9 +377,8 @@ class O2PTSolver():
             Hb = Hb / 10
 
         # Calculate datapoints for convective curve
-        y2 = lambda x: Q * 1.34 * Hb * (SaO2/100 - (x**3 + 150*x)/(x**3 + 150*x + 23400))*10
         x2 = self.phTempCorrection(pH, pH0, T, T0, PvO2)
-        y2 = y2(x2)
+        y2 = Q * 1.34 * Hb * (SaO2/100 - (x2**3 + 150*x2)/(x2**3 + 150*x2 + 23400))*10
         
         # Calculation of intersection point
         idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
