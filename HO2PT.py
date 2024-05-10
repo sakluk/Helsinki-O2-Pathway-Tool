@@ -39,7 +39,8 @@ app.defaultFont.configure(family="Arial",size=fontSize)
 root.option_add("*Font", f"Arial {fontSize}")
 
 root.title("Helsinki O\u2082 Pathway Tool")
-root.geometry('750x500')
+root.state("zoomed")  # Maximizes the window
+
 
 app.root = root
 
